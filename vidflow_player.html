@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VidFlow - Advanced YouTube Player</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --navy: #1e3a8a;
+            --navy-light: #3b82f6;
+            --navy-dark: #1e40af;
+            --black: #0f172a;
+            --gray-dark: #1e293b;
+            --gray-medium: #334155;
+            --gray-light: #64748b;
+            --white: #ffffff;
+            --border-radius: 12px;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, var(--black) 0%, var(--gray-dark) 100%);
+            color: var(--white);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px 0;
+        }
+
+        .logo {
+            font-size: 3rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--navy-light), var(--white));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+
+        .tagline {
+            color: var(--gray-light);
+            font-size: 1.1rem;
+            font-weight: 400;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 30px;
+        }
+
+        .input-section {
+            background: var(--gray-dark);
+            padding: 30px;
+            border-radius: var(--border-radius);
+            border: 1px solid var(--gray-medium);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .input-group {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .url-input {
+            flex: 1;
+            min-width: 250px;
+            padding: 15px 20px;
+            background: var(--black);
+            border: 2px solid var(--gray-medium);
+            border-radius: var(--border-radius);
+            color: var(--white);
+            font-family: inherit;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .url-input:focus {
+            outline: none;
+            border-color: var(--navy-light);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .url-input::placeholder {
+            color: var(--gray-light);
+        }
+
+        .btn {
+            padding: 15px 30px;
+            background: linear-gradient(135deg, var(--navy), var(--navy-light));
+            border: none;
+            border-radius: var(--border-radius);
+            color: var(--white);
+            font-family: inherit;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(30, 58, 138, 0.3);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .icon {
+            width: 18px;
+            height: 18px;
+            display: inline-block;
+        }
+
+        .play-icon::before {
+            content: "▶";
+            font-size: 14px;
+        }
+
+        .settings-icon::before {
+            content: "⚙";
+            font-size: 16px;
+        }
+
+        .clear-icon::before {
+            content: "✕";
+            font-size: 14px;
+        }
+
+        .video-section {
+            background: var(--gray-dark);
+            padding: 30px;
+            border-radius: var(--border-radius);
+            border: 1px solid var(--gray-medium);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            min-height: 400px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .video-container {
+            width: 100%;
+            max-width: 100%;
+            position: relative;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+        }
+
+        .video-placeholder {
+            text-align: center;
+            color: var(--gray-light);
+            padding: 60px 20px;
+        }
+
+        .video-placeholder .icon-large {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .video-placeholder h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            color: var(--white);
+        }
+
+        .video-placeholder p {
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+
+        .settings-panel {
+            background: var(--gray-dark);
+            padding: 25px;
+            border-radius: var(--border-radius);
+            border: 1px solid var(--gray-medium);
+            margin-top: 20px;
+            display: none;
+        }
+
+        .settings-panel.active {
+            display: block;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .setting-item {
+            margin-bottom: 20px;
+        }
+
+        .setting-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--white);
+        }
+
+        .setting-control {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .slider {
+            flex: 1;
+            height: 6px;
+            background: var(--gray-medium);
+            border-radius: 3px;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            background: var(--navy-light);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: var(--navy-light);
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+        }
+
+        .slider-value {
+            min-width: 40px;
+            text-align: right;
+            color: var(--gray-light);
+            font-weight: 500;
+        }
+
+        .status-message {
+            padding: 15px 20px;
+            border-radius: var(--border-radius);
+            margin-top: 15px;
+            font-weight: 500;
+            text-align: center;
+        }
+
+        .status-success {
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            color: #4ade80;
+        }
+
+        .status-error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #f87171;
+        }
+
+        .aspect-ratio-16-9 {
+            aspect-ratio: 16 / 9;
+        }
+
+        .aspect-ratio-4-3 {
+            aspect-ratio: 4 / 3;
+        }
+
+        /* Responsive Design */
+        @media (min-width: 768px) {
+            .container {
+                padding: 40px 20px;
+            }
+            
+            .input-group {
+                flex-wrap: nowrap;
+            }
+            
+            .main-content {
+                grid-template-columns: 1fr;
+                gap: 40px;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .logo {
+                font-size: 3.5rem;
+            }
+        }
+
+        /* Dark mode optimizations */
+        @media (prefers-color-scheme: dark) {
+            body {
+                background: linear-gradient(135deg, #000000 0%, var(--gray-dark) 100%);
+            }
+        }
+
+        /* Smooth transitions for all interactive elements */
+        * {
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1 class="logo">VidFlow</h1>
+            <p class="tagline">Advanced YouTube Player with Smart URL Detection</p>
+        </header>
+
+        <main class="main-content">
+            <section class="input-section">
+                <div class="input-group">
+                    <input 
+                        type="text" 
+                        class="url-input" 
+                        id="videoUrl" 
+                        placeholder="Paste any YouTube URL here (youtube.com, youtu.be, m.youtube.com, shorts, etc.)"
+                        autocomplete="off"
+                    >
+                    <button class="btn" onclick="loadVideo()">
+                        <span class="icon play-icon"></span>
+                        Load Video
+                    </button>
+                    <button class="btn" onclick="clearVideo()">
+                        <span class="icon clear-icon"></span>
+                        Clear
+                    </button>
+                </div>
+                
+                <button class="btn" onclick="toggleSettings()">
+                    <span class="icon settings-icon"></span>
+                    Settings
+                </button>
+
+                <div class="settings-panel" id="settingsPanel">
+                    <div class="setting-item">
+                        <label class="setting-label">Corner Radius</label>
+                        <div class="setting-control">
+                            <input type="range" class="slider" id="cornerRadius" min="0" max="30" value="12" oninput="updateCornerRadius(this.value)">
+                            <span class="slider-value" id="cornerValue">12px</span>
+                        </div>
+                    </div>
+                    
+                    <div class="setting-item">
+                        <label class="setting-label">Video Aspect Ratio</label>
+                        <div class="setting-control">
+                            <button class="btn" onclick="setAspectRatio('16-9')">16:9 (Default)</button>
+                            <button class="btn" onclick="setAspectRatio('4-3')">4:3 (Classic)</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="statusMessage"></div>
+            </section>
+
+            <section class="video-section">
+                <div class="video-container" id="videoContainer">
+                    <div class="video-placeholder">
+                        <div class="icon-large">▶</div>
+                        <h3>Ready to Play</h3>
+                        <p>Paste any YouTube URL above and click "Load Video" to start watching.<br>
+                        Supports all YouTube formats including shorts, mobile links, and embedded URLs.</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        // YouTube URL patterns for comprehensive video ID extraction
+        const YOUTUBE_PATTERNS = [
+            // Standard YouTube URLs
+            /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/,
+            // YouTube Shorts
+            /youtube\.com\/shorts\/([a-zA-Z0-9_-]{11})/,
+            // Mobile YouTube
+            /m\.youtube\.com\/watch\?v=([a-zA-Z0-9_-]{11})/,
+            // YouTube with additional parameters
+            /youtube\.com\/watch\?.*v=([a-zA-Z0-9_-]{11})/,
+            // Alternative formats
+            /youtube\.com\/v\/([a-zA-Z0-9_-]{11})/,
+            /youtube\.com\/.*[?&]v=([a-zA-Z0-9_-]{11})/,
+        ];
+
+        function extractVideoId(url) {
+            // Clean the URL
+            url = url.trim();
+            
+            // Add protocol if missing
+            if (!url.startsWith('http')) {
+                url = 'https://' + url;
+            }
+
+            // Try each pattern
+            for (const pattern of YOUTUBE_PATTERNS) {
+                const match = url.match(pattern);
+                if (match && match[1]) {
+                    return match[1];
+                }
+            }
+            
+            return null;
+        }
+
+        function showStatus(message, type = 'success') {
+            const statusEl = document.getElementById('statusMessage');
+            statusEl.textContent = message;
+            statusEl.className = `status-message status-${type}`;
+            statusEl.style.display = 'block';
+            
+            // Auto-hide after 3 seconds
+            setTimeout(() => {
+                statusEl.style.display = 'none';
+            }, 3000);
+        }
+
+        function loadVideo() {
+            const urlInput = document.getElementById('videoUrl');
+            const url = urlInput.value;
+            
+            if (!url) {
+                showStatus('Please enter a YouTube URL', 'error');
+                return;
+            }
+
+            const videoId = extractVideoId(url);
+            
+            if (!videoId) {
+                showStatus('Invalid YouTube URL. Please check the link and try again.', 'error');
+                return;
+            }
+
+            const container = document.getElementById('videoContainer');
+            const embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=0&rel=0&modestbranding=1&playsinline=1`;
+            
+            container.innerHTML = `
+                <iframe 
+                    width="100%" 
+                    height="100%" 
+                    src="${embedUrl}" 
+                    frameborder="0" 
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                    allowfullscreen
+                    style="border-radius: var(--border-radius);">
+                </iframe>
+            `;
+            
+            // Add aspect ratio class
+            container.classList.add('aspect-ratio-16-9');
+            
+            showStatus('Video loaded successfully!', 'success');
+        }
+
+        function clearVideo() {
+            const container = document.getElementById('videoContainer');
+            const urlInput = document.getElementById('videoUrl');
+            
+            container.innerHTML = `
+                <div class="video-placeholder">
+                    <div class="icon-large">▶</div>
+                    <h3>Ready to Play</h3>
+                    <p>Paste any YouTube URL above and click "Load Video" to start watching.<br>
+                    Supports all YouTube formats including shorts, mobile links, and embedded URLs.</p>
+                </div>
+            `;
+            
+            container.className = 'video-container';
+            urlInput.value = '';
+            showStatus('Video cleared', 'success');
+        }
+
+        function toggleSettings() {
+            const panel = document.getElementById('settingsPanel');
+            panel.classList.toggle('active');
+        }
+
+        function updateCornerRadius(value) {
+            document.documentElement.style.setProperty('--border-radius', value + 'px');
+            document.getElementById('cornerValue').textContent = value + 'px';
+        }
+
+        function setAspectRatio(ratio) {
+            const container = document.getElementById('videoContainer');
+            container.classList.remove('aspect-ratio-16-9', 'aspect-ratio-4-3');
+            container.classList.add(`aspect-ratio-${ratio}`);
+            showStatus(`Aspect ratio set to ${ratio.replace('-', ':')}`, 'success');
+        }
+
+        // Handle Enter key in URL input
+        document.getElementById('videoUrl').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                loadVideo();
+            }
+        });
+
+        // Auto-focus input on page load
+        window.addEventListener('load', function() {
+            document.getElementById('videoUrl').focus();
+        });
+
+        // Intelligent paste detection and auto-load
+        document.getElementById('videoUrl').addEventListener('paste', function(e) {
+            setTimeout(() => {
+                const url = this.value;
+                if (url && extractVideoId(url)) {
+                    // Auto-load after paste if URL is valid (optional feature)
+                    // loadVideo();
+                }
+            }, 100);
+        });
+
+        // Responsive video container sizing
+        function updateVideoSize() {
+            const container = document.getElementById('videoContainer');
+            const containerWidth = container.offsetWidth;
+            
+            // Intelligent sizing based on screen width
+            if (window.innerWidth < 768) {
+                // Mobile: Use full width
+                container.style.maxWidth = '100%';
+            } else if (window.innerWidth < 1024) {
+                // Tablet: Slightly constrained
+                container.style.maxWidth = '90%';
+            } else {
+                // Desktop: Optimal viewing size
+                container.style.maxWidth = '100%';
+            }
+        }
+
+        // Update video size on window resize
+        window.addEventListener('resize', updateVideoSize);
+        window.addEventListener('load', updateVideoSize);
+    </script>
+</body>
+</html>
